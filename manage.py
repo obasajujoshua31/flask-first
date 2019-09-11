@@ -1,21 +1,23 @@
-from flask import Flask, jsonify, request
+from dotenv import load_dotenv
+from flask_script import Manager
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate, MigrateCommand
+from app import create_app
 import os
 
-app = Flask(__name__)
 
+# refers to application_top
+APP_ROOT = os.path.join(os.path.dirname(__file__), '.')
+dotenv_path = os.path.join(APP_ROOT, '.env')
+load_dotenv(dotenv_path)
 
-@app.route("/")
-def home():
-    return "<h1>Welcome to the home Page </h1>"
+config_name = os.environ.get('APP_SETTINGS')
+db = SQLAlchemy()
+app = create_app(config_name, db)
+migrate = Migrate(app, db)
+manager = Manager(app)
 
-
-@app.route("/about")
-def about():
-    return jsonify({
-        "age": 45,
-        "Sex": "Male"
-    })
-
+manager.add_command('db', MigrateCommand)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    manager.run()
